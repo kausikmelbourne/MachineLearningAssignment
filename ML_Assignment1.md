@@ -34,7 +34,7 @@ Dumbell : accel_dumbbell_x,accel_dumbbell_y,accel_dumbbell_z
 Arm     : accel_arm_x,accel_arm_y,accel_arm_z   
 
 Following is the R code for assigning the data to the new variables for the selected variables.
----
+
 trnmodsmpl <- trnmod[,c("num_window",
                                   "accel_belt_x", "accel_belt_y", "accel_belt_z",  
                                   "accel_forearm_x", "accel_forearm_y", "accel_forearm_z",  
@@ -56,7 +56,7 @@ tstsmpl <- tst[, c("num_window",
                          "accel_arm_x", "accel_arm_y", "accel_arm_z",  
                          "problem_id" )]  
   
----
+
 The following are R few R commands, I used for exploratory analysis and visualisations.
 
 featurePlot(x = trnmodsmpl[,c(1,2)], y = trnmodsmpl$classe, plot = "pairs")  
