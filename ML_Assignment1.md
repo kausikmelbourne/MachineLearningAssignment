@@ -5,35 +5,35 @@ Author      : K Samanta
 ---
 
 ## Overview
-The goal of the project assignment is to predict the exercise manner categories from the sampl exercise training data. 
+The goal of the project assignment is to predict the manner exercises are done from the data recorded in  the accelerometers on the belt, forearm, arm, and dumbell of 6 participants. 
 The variable name for prediction is "classe" and the other variables are used to predict "classe" value.
 This report describes the steps to built the model, cross validation steps and the expected out of sample error.
 
 ## Defining Error Rate
-There is no specific requirement for prediction accuracy rate. However, let us set an prediction error rate to be less than 10%.
+There is no specific requirement for prediction accuracy rate. However, let us assume that the prediction error rate to be less than 10%.
 
 ## Load Training/Test data and split training data for validation
-The data loaded from the two .csv files provided. Followind is the R code for loading the data. 
+The data loaded from the two .csv files provided for the project. Followind is the R code for loading the data into two variables. 
 
 library(caret)   
 trn <- read.csv("pml-training.csv", na.strings = c("NA", "", "#DIV/0!"))   
 tst <- read.csv("pml-testing.csv", na.strings = c("NA", "", "#DIV/0!"))   
 
-\#Split training data for validation set    
+\#Split training data for cross validation
 trninx <-  createDataPartition( y = trn$classe, p = .8, list = FALSE )   
 trnmod <- trn[trninx,]  
 trnvld <- trn[-trninx,]   
 
 
 ## Select features/variables
-The dataset contains 160 variable including the prediction variable. As instructed the following variables are used for analysis.
+The dataset contains 160 variable including the prediction variable. As instructed, the following variables are selected for detail analysis. The other variables are also considered for inclusion in the model.
 
 Belt    : accel_belt_x,accel_belt_y,accel_belt_z  
 Forearm : accel_forearm_x,accel_forearm_y,accel_forearm_z  
 Dumbell : accel_dumbbell_x,accel_dumbbell_y,accel_dumbbell_z  
 Arm     : accel_arm_x,accel_arm_y,accel_arm_z   
 
-Following is the R code for variable selection for model generation.
+Following is the R code for assigning the data to the new variables for the selected variables.
 ---
 trnmodsmpl <- trnmod[,c("num_window",
                                   "accel_belt_x", "accel_belt_y", "accel_belt_z",  
@@ -57,7 +57,7 @@ tstsmpl <- tst[, c("num_window",
                          "problem_id" )]  
   
 ---
-The following analysis has been performed to identify the appropriate variables. Following are codes for exploratory analysis including visualisations.
+The following are R few R commands, I used for exploratory analysis and visualisations.
 
 featurePlot(x = trnmodsmpl[,c(1,2)], y = trnmodsmpl$classe, plot = "pairs")  
   
@@ -71,12 +71,13 @@ for (i in 1:13)
   Ln <- readline()  
 }  
   
+Following are few examples of the visualisations. 
   
 <img class=center src="ScatPlot.png" height=400 />
 <img class=center src="Analysis.png" height=400 />
 
 ## Define the Model
-After exploratory analysis, it is evident that the problem is related to clustering problem. I have used few methods and method random forest is providing the best result. I am using preProcessing "pca" to improve the accuracy.
+After exploratory analysis, I have used few methods to train the model. Finally I used random forest method for better  result. I am using preProcessing "pca" to improve the accuracy.
 
 \>modFit <- train(classe ~ ., method = "rf", preProcess = "pca", data = trnmodsmpl)  
   
@@ -118,6 +119,9 @@ pred    A    B    C    D    E
 Output of errRate:  
 \>errRate  
 [1] 0.06755034  
+
+The expected  out of sample error is 06.76%
+
 ##Prediction on Test data  
 predTst <- predict(modFit, tstsmpl)  
 
