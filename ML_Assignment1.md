@@ -72,7 +72,7 @@ for (i in 1:13)
 }  
   
   
-<img class=center src="FeatPlot1.png" height=400 />
+<img class=center src="ScatPlot.png" height=400 />
 <img class=center src="Analysis.png" height=400 />
 
 ## Define the Model
