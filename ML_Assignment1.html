@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<h2 id="overview">Overview</h2>
+<p>The goal of the project assignment is to predict the manner exercises are done from the data recorded in the accelerometers on the belt, forearm, arm, and dumbell of 6 participants. The variable name for prediction is &quot;classe&quot; and the other variables are used to predict &quot;classe&quot; value. This report describes the steps to built the model, cross validation steps and the expected out of sample error.</p>
+<h2 id="defining-error-rate">Defining Error Rate</h2>
+<p>There is no specific requirement for prediction accuracy rate. However, let us assume that the prediction error rate to be less than 10%.</p>
+<h2 id="load-trainingtest-data-and-split-training-data-for-validation">Load Training/Test data and split training data for validation</h2>
+<p>The data loaded from the two .csv files provided for the project. Followind is the R code for loading the data into two variables.</p>
+<p>library(caret)<br />
+trn &lt;- read.csv(&quot;pml-training.csv&quot;, na.strings = c(&quot;NA&quot;, &quot;&quot;, &quot;#DIV/0!&quot;))<br />
+tst &lt;- read.csv(&quot;pml-testing.csv&quot;, na.strings = c(&quot;NA&quot;, &quot;&quot;, &quot;#DIV/0!&quot;))</p>
+<p>#Split training data for cross validation trninx &lt;- createDataPartition( y = trn$classe, p = .8, list = FALSE )<br />
+trnmod &lt;- trn[trninx,]<br />
+trnvld &lt;- trn[-trninx,]</p>
+<h2 id="select-featuresvariables">Select features/variables</h2>
+<p>The dataset contains 160 variable including the prediction variable. As instructed, the following variables are selected for detail analysis. The other variables are also considered for inclusion in the model.</p>
+<p>Belt : accel_belt_x,accel_belt_y,accel_belt_z<br />
+Forearm : accel_forearm_x,accel_forearm_y,accel_forearm_z<br />
+Dumbell : accel_dumbbell_x,accel_dumbbell_y,accel_dumbbell_z<br />
+Arm : accel_arm_x,accel_arm_y,accel_arm_z</p>
+<p>Following is the R code for assigning the data to the new variables for the selected variables.</p>
+<p>trnmodsmpl &lt;- trnmod[,c(&quot;num_window&quot;, &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;,<br />
+ &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;,<br />
+ &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;,<br />
+ &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;,<br />
+ &quot;classe&quot; )]</p>
+<p>trntstsmpl &lt;- trnvld[, c(&quot;num_window&quot;, &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;,<br />
+ &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;,<br />
+ &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;,<br />
+ &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;,<br />
+ &quot;classe&quot; )]</p>
+<p>tstsmpl &lt;- tst[, c(&quot;num_window&quot;,<br />
+ &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;,<br />
+ &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;,<br />
+ &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;,<br />
+ &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;,<br />
+ &quot;problem_id&quot; )]</p>
+<p>The following are R few R commands, I used for exploratory analysis and visualisations.</p>
+<p>featurePlot(x = trnmodsmpl[,c(1,2)], y = trnmodsmpl$classe, plot = &quot;pairs&quot;)</p>
+<p>for (i in 1:13)<br />
+{<br />
+ print(i)<br />
+ plot(trnmodsmpl[,2], trnmodsmpl[,i],<br />
+ col = trnmodsmpl$classe, main = i<br />
+ )<br />
+ cat(&quot;Press Enter to continue ...&quot;)<br />
+ Ln &lt;- readline()<br />
+}</p>
+<p>Following are few examples of the visualisations.</p>
+<p><img class=center src="ScatPlot.png" height=400 /> <img class=center src="Analysis.png" height=400 /></p>
+<h2 id="define-the-model">Define the Model</h2>
+<p>After exploratory analysis, I have used few methods to train the model. Finally I used random forest method for better result. I am using preProcessing &quot;pca&quot; to improve the accuracy.</p>
+<p>&gt;modFit &lt;- train(classe ~ ., method = &quot;rf&quot;, preProcess = &quot;pca&quot;, data = trnmodsmpl)</p>
+<p>Following the generated model information<br />
+&gt; modFit$finalModel</p>
+<p>Call:<br />
+ randomForest(x = x, y = y, mtry = param$mtry)<br />
+ Type of random forest: classification<br />
+ Number of trees: 500<br />
+No. of variables tried at each split: 2</p>
+<pre><code>    OOB estimate of  error rate: 6.82%  </code></pre>
+<p>Confusion matrix:<br />
+ A B C D E class.error<br />
+A 4284 49 59 64 8 0.04032258<br />
+B 153 2706 99 38 42 0.10928242<br />
+C 41 76 2570 41 10 0.06135866<br />
+D 36 24 123 2356 34 0.08433735<br />
+E 21 46 37 69 2713 0.05994456</p>
+<h2 id="cross-validation-and-expected-out-of-sample-error">Cross Validation and expected Out of Sample error</h2>
+<p>The validation data set is used for calculating the expected error as follows -<br />
+pred &lt;- predict(modFit, trntstsmpl)<br />
+valTab = table(pred,trntstsmpl<span class="math inline"><em>c</em><em>l</em><em>a</em><em>s</em><em>s</em><em>e</em>)<em>d</em><em>i</em><em>a</em><em>g</em>(<em>v</em><em>a</em><em>l</em><em>T</em><em>a</em><em>b</em>) = 0<em>e</em><em>r</em><em>r</em><em>R</em><em>a</em><em>t</em><em>e</em> = <em>s</em><em>u</em><em>m</em>(<em>v</em><em>a</em><em>l</em><em>T</em><em>a</em><em>b</em>)/<em>l</em><em>e</em><em>n</em><em>g</em><em>t</em><em>h</em>(<em>t</em><em>r</em><em>n</em><em>t</em><em>s</em><em>t</em><em>s</em><em>m</em><em>p</em><em>l</em></span>classe)</p>
+<p>Output of valTab:<br />
+&gt;valTab<br />
+pred A B C D E<br />
+ A 1074 25 12 9 4<br />
+ B 10 689 21 4 22<br />
+ C 16 24 638 32 9<br />
+ D 16 12 10 594 24<br />
+ E 0 9 3 4 662</p>
+<p>Output of errRate:<br />
+&gt;errRate<br />
+[1] 0.06755034</p>
+<p>The expected out of sample error is 06.76%</p>
+<h2 id="prediction-on-test-data">Prediction on Test data</h2>
+<p>predTst &lt;- predict(modFit, tstsmpl)</p>
+<p>The predTst provides the prediction of the test data file for the assignment.</p>
+</body>
+</html>
